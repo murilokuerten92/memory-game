@@ -1,7 +1,47 @@
+import { useState } from "react";
+import { GameBoard } from "./components/GameBoard";
+import { GameModal } from "./components/GameModal";
+import { ScoreBoard } from "./components/ScoreBoard";
+import { useMemomyGame } from "./hooks/use-memory-game";
+import { formatTime } from "./lib/formatTime";
+import { Difficulty } from "./types";
+import { DifficultySelector } from "./components/DifficultySelector";
+
 function App() {
+  const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
+
+  const { cards, handleCardClick, cardMoves, resetGame, time, gameCompleted } =
+    useMemomyGame(difficulty || "easy");
+
+  const formattedTime = formatTime(time);
+
+  const handleRestart = () => {
+    setDifficulty(null);
+    resetGame();
+  };
+
+  if (!difficulty) return <DifficultySelector onSelect={setDifficulty} />;
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-blue-200">
-      <h1 className="text-3xl font-bold text-pink underline">Hello world!</h1>
+    <div className="flex min-h-screen w-full flex-col items-center justify-center gap-4 bg-blue-200 sm:gap-8 sm:p-8">
+      <ScoreBoard
+        moves={cardMoves}
+        time={formattedTime}
+        onRestart={handleRestart}
+      />
+
+      <GameBoard
+        cards={cards}
+        difficulty={difficulty}
+        onCardClick={handleCardClick}
+      />
+      {gameCompleted && (
+        <GameModal
+          moves={cardMoves}
+          time={formattedTime}
+          onRestart={handleRestart}
+        />
+      )}
     </div>
   );
 }
